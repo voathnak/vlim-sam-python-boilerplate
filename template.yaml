@@ -24,6 +24,15 @@ Parameters:
   AppName:
     Type: String
     Description: The name of the APP
+    Default: vlim-co-sam-python-boilerplate
+  TodoTableName:
+    Type: String
+    Default: 'TodoTable'
+    Description: (Required) The name of the new DynamoDB table you want to create and save to. Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z]+$
+    ConstraintDescription: 'Required parameter. Must be characters only. No numbers allowed.'
 
 
 
@@ -48,7 +57,7 @@ Resources:
         Fn::Sub: ${AppName}-${StageName}-HelloWorld
       CodeUri: hello_world/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.7
       Events:
         HelloWorld:
           Type: Api 
@@ -57,6 +66,178 @@ Resources:
               Ref: RestApi
             Path: /hello
             Method: get
+      Layers:
+        - !Ref PythonLibs
+
+
+  createTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-createTodo
+      CodeUri: todos/
+      Handler: create.lambda_handler
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Events:
+        createTodo:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /todos
+            Method: post
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  listTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-listTodo
+      CodeUri: todos/
+      Handler: list.todo_list
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Events:
+        listTodo:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /todos
+            Method: get
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  getTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-getTodo
+      CodeUri: todos/
+      Handler: get.get
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Events:
+        getTodo:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /todos/{todo_id}
+            Method: get
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  updateTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-updateTodo
+      CodeUri: todos/
+      Handler: update.update
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Events:
+        updateTodo:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /todos/{todo_id}
+            Method: put
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  deleteTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-deleteTodo
+      CodeUri: todos/
+      Handler: delete.delete
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      Events:
+        deleteTodo:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /todos/{todo_id}
+            Method: delete
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+
+
+  CoreLibs:
+    Type: 'AWS::Serverless::LayerVersion'
+    Properties:
+      ContentUri: layer/core
+      CompatibleRuntimes: # optional
+        - python3.7
+
+
+
+  PythonLibs:
+    Type: 'AWS::Serverless::LayerVersion'
+    Properties:
+      ContentUri: layer/python_libs
+      CompatibleRuntimes: # optional
+        - python3.7
+
+
+
+  TodosDynamoDbTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      AttributeDefinitions:
+        - AttributeName: todo_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: todo_id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
 
 

@@ -2,6 +2,8 @@
 
 source scripts/config.sh
 
+cp -r models layer/core/python
+
 aws s3api 	--profile "$PROFILE" create-bucket \
 			--bucket "$S3_BUCKET" \
 			--region "$REGION"
