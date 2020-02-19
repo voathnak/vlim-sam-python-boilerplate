@@ -24,11 +24,10 @@ class CoreModel:
         }
 
         item.update(values)
-        for key, value in item.items():
-            self.__setattr__(key, value)
+        self._load(item)
 
         self._has_record = True
-        # write the todo to the database
+        # write the record to the database
         self._table.put_item(Item=item)
         return self.__getattribute__('itemId')
 
@@ -37,8 +36,7 @@ class CoreModel:
             item = self._table.get_item(Key={'itemId': itemId}).get('Item', [])
             if item:
                 self._has_record = True
-                for key, value in item.items():
-                    self.__setattr__(key, value)
+                self._load(item)
                 return self.__getattribute__('itemId')
             else:
                 self._has_record = False
@@ -46,12 +44,50 @@ class CoreModel:
             print(e.response['Error']['Message'])
 
     def list(self):
-        todos = self._table.scan().get('Items', [])
-        if todos:
+        records = self._table.scan().get('Items', [])
+        if records:
             self._has_record = True
-            return [self._from_dict(todo) for todo in todos]
+            return [self._from_dict(record) for record in records]
         else:
             self._has_record = False
+
+    def update(self, itemId, update_dict):
+        try:
+            item = self._table.get_item(Key={'itemId': itemId}).get('Item', [])
+
+            if item:
+                self._load(item)
+                self._has_record = True
+                changed = False
+                update_dict.update({'updatedAt': str(datetime.utcnow().timestamp())})
+                UpdateExpression = 'SET '
+                ExpressionAttributeValues = {}
+                ExpressionAttributeNames = {}
+                for key, value in update_dict.items():
+                    if key != "itemId" and key != 'createdAt':
+                        if self.__getattribute__(key) != value:
+                            changed = True
+                            UpdateExpression += "#{} = :{}, ".format(key[:-2], key)
+                            ExpressionAttributeValues[":{}".format(key)] = value
+                            ExpressionAttributeNames["#{}".format(key[:-2])] = key
+                if changed:
+                    updated_record = self._table.update_item(
+                        Key={
+                            'itemId': itemId
+                        },
+                        ConditionExpression='attribute_exists(itemId)',
+                        UpdateExpression=UpdateExpression[:-2],
+                        ExpressionAttributeValues=ExpressionAttributeValues,
+                        ExpressionAttributeNames=ExpressionAttributeNames,
+                        ReturnValues='ALL_NEW',
+                    )
+                    self._load(updated_record.get('Attributes'))
+                    return updated_record.get('Attributes')
+                return "No Changed"
+            else:
+                self._has_record = False
+        except ClientError as e:
+            print(e.response['Error']['Message'])
 
     def delete(self, itemId):
         try:
@@ -60,11 +96,15 @@ class CoreModel:
         except ClientError as e:
             print(e.response['Error']['Message'])
 
-    def _from_dict(self, todo_dict):
-        todo = self.__class__(self._table)
-        for key, value in todo_dict.items():
-            todo.__setattr__(key, value)
-        return todo
+    def _load(self, item):
+        for key, value in item.items():
+            self.__setattr__(key, value)
+
+    def _from_dict(self, record_dict):
+        record = self.__class__(self._table)
+        for key, value in record_dict.items():
+            record.__setattr__(key, value)
+        return record
 
     def __iter__(self):
         iters = dict((x, y) for x, y in self.__dict__.items() if x[:1] != '_')
