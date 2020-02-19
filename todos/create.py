@@ -25,15 +25,6 @@ def lambda_handler(event, context):
     })
 
     # create a response
-    print("#" * 100)
-    print("a_todo:", a_todo)
-    print("#" * 100)
     return {'statusCode': 201,
             'body': json.dumps(dict(a_todo))}
 
-
-def log_event(event):
-    print("#" * 100)
-    event_json = json.dumps(event, indent=4, sort_keys=False)
-    print("#---- event:", event_json)
-    print("#" * 100)
