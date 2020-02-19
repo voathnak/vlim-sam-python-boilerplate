@@ -11,6 +11,7 @@ class CoreModel:
 
     def __init__(self, table_name):
         self._table = dynamodb.Table(table_name)
+        self._has_record = False
 
     def save(self, values):
 
@@ -26,14 +27,26 @@ class CoreModel:
         for key, value in item.items():
             self.__setattr__(key, value)
 
+        self._has_record = True
         # write the todo to the database
         self._table.put_item(Item=item)
 
     def get(self, itemId):
         try:
-            item = self._table.get_item(Key={'itemId': itemId})
-            for key, value in item.get('Item', []).items():
-                self.__setattr__(key, value)
+            item = self._table.get_item(Key={'itemId': itemId}).get('Item', [])
+            if item:
+                self._has_record = True
+                for key, value in item.items():
+                    self.__setattr__(key, value)
+            else:
+                self._has_record = False
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+
+    def delete(self, itemId):
+        try:
+            self._table.delete_item(Key={'itemId': itemId})
+            self._has_record = False
         except ClientError as e:
             print(e.response['Error']['Message'])
 
@@ -48,3 +61,5 @@ class CoreModel:
         else:
             self.__dict__[name] = value
 
+    def __bool__(self):
+        return self._has_record
