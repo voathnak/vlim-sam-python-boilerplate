@@ -144,7 +144,7 @@ Resources:
           Properties:
             RestApiId:
               Ref: RestApi
-            Path: /todos/{todo_id}
+            Path: /todos/{itemId}
             Method: get
       Layers:
         - !Ref PythonLibs
@@ -171,7 +171,7 @@ Resources:
           Properties:
             RestApiId:
               Ref: RestApi
-            Path: /todos/{todo_id}
+            Path: /todos/{itemId}
             Method: put
       Layers:
         - !Ref PythonLibs
@@ -198,7 +198,7 @@ Resources:
           Properties:
             RestApiId:
               Ref: RestApi
-            Path: /todos/{todo_id}
+            Path: /todos/{itemId}
             Method: delete
       Layers:
         - !Ref PythonLibs
@@ -230,10 +230,10 @@ Resources:
     Properties:
       TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
       AttributeDefinitions:
-        - AttributeName: todo_id
+        - AttributeName: itemId
           AttributeType: S
       KeySchema:
-        - AttributeName: todo_id
+        - AttributeName: itemId
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 1

@@ -1,15 +1,11 @@
 import json
-
-from pynamodb.exceptions import DoesNotExist
-from models.python.todo_model import TodoModel
+import os
+from models.todo_model import TodoModel
 
 
 def get(event, context):
-    try:
-        found_todo = TodoModel.get(hash_key=event['path']['todo_id'])
-    except DoesNotExist:
-        return {'statusCode': 404,
-                'body': json.dumps({'error_message': 'TODO was not found'})}
+    found_todo = TodoModel(os.environ['DYNAMODB_TABLE'])
+    found_todo.get(event.get('pathParameters').get('itemId'))
 
     # create a response
     return {'statusCode': 200,
