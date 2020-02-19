@@ -45,12 +45,26 @@ class CoreModel:
         except ClientError as e:
             print(e.response['Error']['Message'])
 
+    def list(self):
+        todos = self._table.scan().get('Items', [])
+        if todos:
+            self._has_record = True
+            return [self._from_dict(todo) for todo in todos]
+        else:
+            self._has_record = False
+
     def delete(self, itemId):
         try:
             self._table.delete_item(Key={'itemId': itemId})
             self._has_record = False
         except ClientError as e:
             print(e.response['Error']['Message'])
+
+    def _from_dict(self, todo_dict):
+        todo = self.__class__(self._table)
+        for key, value in todo_dict.items():
+            todo.__setattr__(key, value)
+        return todo
 
     def __iter__(self):
         iters = dict((x, y) for x, y in self.__dict__.items() if x[:1] != '_')

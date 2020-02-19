@@ -1,12 +1,16 @@
 import json
+import os
 
-import todo_model as TodoModel
+from snippets import log_event
+from models.todo_model import TodoModel
 
 
 def todo_list(event, context):
+    log_event(event)
     # fetch all todos from the database
-    results = TodoModel.scan()
+    Todo = TodoModel(os.environ['DYNAMODB_TABLE'])
+    todos = Todo.list()
 
     # create a response
     return {'statusCode': 200,
-            'body': json.dumps({'items': [dict(result) for result in results]})}
+            'body': json.dumps({'todos': [dict(result) for result in todos]})}
