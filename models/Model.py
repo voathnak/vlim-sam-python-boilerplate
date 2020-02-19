@@ -30,6 +30,7 @@ class CoreModel:
         self._has_record = True
         # write the todo to the database
         self._table.put_item(Item=item)
+        return self.__getattribute__('itemId')
 
     def get(self, itemId):
         try:
@@ -38,6 +39,7 @@ class CoreModel:
                 self._has_record = True
                 for key, value in item.items():
                     self.__setattr__(key, value)
+                return self.__getattribute__('itemId')
             else:
                 self._has_record = False
         except ClientError as e:
