@@ -1,6 +1,9 @@
 #!/bin/bash -x
 
 set -e
+mkdir -p layer/core/python/
+cp -r snippets layer/core/python/
+cp -r models layer/core/python/
 
 rm -rf layer/python_libs
 docker build -t requests-lambda-layer/python_libs .
@@ -15,3 +18,4 @@ share/**
 include/**
 bin/**
 EOF
+
