@@ -17,14 +17,30 @@ The Serverless Application Model Command Line Interface (SAM CLI) is an extensio
 
 To use the SAM CLI, you need the following tools.
 
+* AWS CLI - [Install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 * [Python 3 installed](https://www.python.org/downloads/)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
-To build and deploy your application for the first time, change the AWS profile in scripts/config.sh file then run the following in your shell:
+To setup local environment, build and deploy your application for the first time:
 
 ```bash
+# create python virtual environment
+virtualenv venv -p python3   
+
+# activate the environment you just created
+source venv/bin/activate
+
+# install all the project python module requirements
+pip install -r requirements.txt
+
+# build the required external source for deployment
 sh scripts/layer-build.sh
+
+# change the AWS PROFILE and APP_NAME in scripts/config.sh file then run the following in your shell
+vi scripts/config.sh
+
+# deploy the project
 sh scripts/deploy.sh
 ```
 
@@ -49,10 +65,10 @@ You can find your API Gateway Endpoint URL in the output values displayed after 
 
 ## Use the SAM CLI to build and test locally
 
-Build your application with the `sam build --use-container` command.
+## Build your application with the `run.sh` command.
 
 ```bash
-vlim-sam-python-boilerplate$ sam build --use-container
+sh scripts/run.sh
 ```
 
 The SAM CLI installs dependencies defined in `hello_world/requirements.txt`, creates a deployment package, and saves it in the `.aws-sam/build` folder.

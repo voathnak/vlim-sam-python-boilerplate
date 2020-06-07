@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: todos
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/todos/{itemId}':
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/todo'
+      operationId: get-todos
+      description: Get todos list
+    post:
+      summary: ''
+      operationId: post-todos
+      responses:
+        '200':
+          description: OK
+          headers: {}
+      description: Create todo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/todo'
+            examples:
+              feed-the-fish:
+                value:
+                  text: feed the fish
+                  checked: false
+        description: ''
+      parameters: []
+    delete:
+      summary: ''
+      operationId: delete-todos
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: ''
+      operationId: put-todos
+      responses:
+        '200':
+          description: OK
+    parameters:
+      - schema:
+          type: string
+          format: uuid
+        name: itemId
+        in: path
+        description: ''
+components:
+  schemas:
+    todo:
+      title: todo
+      type: object
+      x-examples:
+        feed-the-fish:
+          text: feed the fish
+          checked: false
+      properties:
+        text:
+          type: string
+        checked:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        itemId:
+          type: string
+          format: uuid
+        updatedAt:
+          type: string
+          format: date-time
