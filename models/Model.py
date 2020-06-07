@@ -50,6 +50,7 @@ class CoreModel:
             return [self._from_dict(record) for record in records]
         else:
             self._has_record = False
+            return []
 
     def update(self, itemId, update_dict):
         try:
