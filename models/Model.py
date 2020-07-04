@@ -44,7 +44,14 @@ class CoreModel:
             print(e.response['Error']['Message'])
 
     def list(self):
-        records = self._table.scan().get('Items', [])
+        try:
+            records = self._table.scan().get('Items', [])
+        except Exception as e:
+            print("#" * 100)
+            print("###", "Getting records from", self._table)
+            print("###", e)
+            print("#" * 100)
+            raise
         if records:
             self._has_record = True
             return [self._from_dict(record) for record in records]

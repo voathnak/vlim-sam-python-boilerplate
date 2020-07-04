@@ -24,7 +24,7 @@ Parameters:
   AppName:
     Type: String
     Description: The name of the APP
-    Default: your_app_name
+    Default: vlim-co-sam-python-boilerplate
   TodoTableName:
     Type: String
     Default: 'TodoTable'
