@@ -1,8 +1,12 @@
+import json
+import logging
 import uuid
 from datetime import datetime
 
 import boto3
 from botocore.exceptions import ClientError
+
+from snippets import response
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -22,6 +26,13 @@ class CoreModel:
             'createdAt': timestamp,
             'updatedAt': timestamp,
         }
+
+        for field in self.__getattribute__("_required_fields"):
+            if not values.get(field, False):
+                error_message = "field: {} is required!".format(field)
+                logging.error(error_message)
+                self.error_response = response(402, json.dumps({"error": error_message}))
+                return None
 
         item.update(values)
         self._load(item)
@@ -106,7 +117,8 @@ class CoreModel:
 
     def _load(self, item):
         for key, value in item.items():
-            self.__setattr__(key, value)
+            if key[0] != "_":
+                self.__setattr__(key, value)
 
     def _from_dict(self, record_dict):
         record = self.__class__(self._table)
