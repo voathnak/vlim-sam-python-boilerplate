@@ -39,6 +39,14 @@ Parameters:
     MaxLength: 50
     AllowedPattern: ^[A-Za-z]+$
     ConstraintDescription: 'Required parameter. Must be characters only. No numbers allowed.'
+  UserTableName:
+    Type: String
+    Default: 'UserTable'
+    Description: (Required) The name of the new DynamoDB table you want to create and save to. Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z]+$
+    ConstraintDescription: 'Required parameter. Must be characters only. No numbers allowed.'
 
 
 
@@ -212,6 +220,176 @@ Resources:
 
 
 
+  createUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-createUser
+      CodeUri: users/
+      Handler: create.lambda_handler
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Events:
+        createUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users
+            Method: post
+        registerUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users/register
+            Method: post
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  listUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-listUser
+      CodeUri: users/
+      Handler: list.user_list
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Events:
+        listUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users
+            Method: get
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  authenticateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-authenticateUser
+      CodeUri: users/
+      Handler: authenticate.authenticate_handler
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Events:
+        authenticateUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users/authenticate
+            Method: post
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  getUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-getUser
+      CodeUri: users/
+      Handler: get.get
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Events:
+        getUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users/{itemId}
+            Method: get
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  updateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-updateUser
+      CodeUri: users/
+      Handler: update.update
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Events:
+        updateUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users/{itemId}
+            Method: put
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+  deleteUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-deleteUser
+      CodeUri: users/
+      Handler: delete.delete
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Events:
+        deleteUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /users/{itemId}
+            Method: delete
+      Layers:
+        - !Ref PythonLibs
+        - !Ref CoreLibs
+
+
+
 
   CoreLibs:
     Type: 'AWS::Serverless::LayerVersion'
@@ -228,6 +406,22 @@ Resources:
       ContentUri: layer/python_libs
       CompatibleRuntimes: # optional
         - python3.7
+
+
+
+  UsersDynamoDbTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      AttributeDefinitions:
+        - AttributeName: itemId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: itemId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
 
 
