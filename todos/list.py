@@ -1,7 +1,7 @@
 import json
 import os
 
-from snippets import log_event
+from snippets import log_event, response
 from models.todo_model import TodoModel
 
 
@@ -12,5 +12,4 @@ def todo_list(event, context):
     todos = Todo.list()
 
     # create a response
-    return {'statusCode': 200,
-            'body': json.dumps({'todos': [dict(result) for result in todos]})}
+    return response(200, json.dumps({'todos': [dict(result) for result in todos]}))

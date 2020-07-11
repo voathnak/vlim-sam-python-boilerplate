@@ -1,6 +1,7 @@
 import json
 import os
 from models.todo_model import TodoModel
+from snippets import response
 
 
 def delete(event, context):
@@ -9,4 +10,4 @@ def delete(event, context):
     todo.delete(itemId)
 
     # create a response
-    return {'statusCode': 204}
+    return response(204)

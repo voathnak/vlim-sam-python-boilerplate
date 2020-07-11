@@ -1,6 +1,7 @@
 import json
 import os
 from models.todo_model import TodoModel
+from snippets import response
 
 
 def get(event, context):
@@ -10,14 +11,7 @@ def get(event, context):
 
     # create a response
     if found_todo:
-        response = {
-            'statusCode': 200,
-            'body': json.dumps(dict(found_todo))
-        }
+        return response(200, json.dumps(dict(found_todo)))
     else:
-        response = {
-            'statusCode': 204,
-            'body': "Record not found"
-         }
+        return response(204, "Record not found")
 
-    return response

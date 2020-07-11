@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from snippets import log_event
+from snippets import log_event, response
 from models.todo_model import TodoModel
 
 
@@ -14,6 +14,5 @@ def update(event, context):
     todo.update(itemId, data)
 
     # create a response
-    return {'statusCode': 200,
-            'body': json.dumps(dict(todo))}
+    return response(200,json.dumps(dict(todo)))
 
