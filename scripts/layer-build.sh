@@ -3,6 +3,7 @@
 set -e
 mkdir -p layer/core/python/
 cp -r snippets layer/core/python/
+cp -r snail layer/core/python/
 cp -r models layer/core/python/
 
 rm -rf layer/python_libs
