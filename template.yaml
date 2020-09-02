@@ -62,6 +62,23 @@ Resources:
           HttpMethod: '*' # allows for logging on any method
       StageName:
         Ref: StageName
+      Auth:
+        DefaultAuthorizer: MyLambdaTokenAuthorizer
+        Authorizers:
+          MyLambdaTokenAuthorizer:
+            FunctionArn: !GetAtt MyAuthFunction.Arn
+
+
+
+  MyAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AppName}-${StageName}-MyAuth
+      CodeUri: base/
+      Handler: authorizer.handler
+      Runtime: python3.7
+
 
 
   HelloWorldFunction:
@@ -80,6 +97,8 @@ Resources:
               Ref: RestApi
             Path: /hello
             Method: get
+            Auth:
+              Authorizer: NONE
       Layers:
         - !Ref PythonLibs
 
@@ -442,6 +461,9 @@ Resources:
 
 
 Outputs:
+  ApiURL:
+    Description: "API URL"
+    Value: !Sub 'https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/'
   HelloWorldApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/hello/"
