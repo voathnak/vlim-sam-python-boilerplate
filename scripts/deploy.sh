@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 source scripts/config.sh
-
-cp -r snail layer/core/python
-cp -r models layer/core/python
-cp -r snippets layer/core/python
+rm -rf .aws-sam
+sh scripts/layer-preparation.sh
 
 aws s3api 	--profile "$PROFILE" create-bucket \
 			--bucket "$S3_BUCKET" \
