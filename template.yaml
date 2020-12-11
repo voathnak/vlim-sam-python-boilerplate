@@ -26,7 +26,7 @@ Parameters:
   DatabaseUri: # Changed this to remove underscore
     Description: 'Required. MongoDB connection URL'
     Type: 'String'
-    Default: "mongodb+srv://vlim:bLgOTWoUvI4kaUtN@vlim-sam-python-mongodb.qzg3k.mongodb.net/vlim-co-sam-python-boilerplate?retryWrites=true&w=majority"
+    Default: "mongodb+srv://vlim:bLgOTWoUvI4kaUtN@cluster0.qzg3k.mongodb.net/vlim-co-sam-python-boilerplate?retryWrites=true&w=majority"
   DeploymentS3BucketName:
     Type: String
     Description: The name of the S3 bucket in which the Swagger specification is stored

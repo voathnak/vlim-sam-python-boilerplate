@@ -11,5 +11,5 @@ INPUT_FILE=template.yaml
 OUTPUT_FILE=packaged.yaml
 DB_PASSWORD="bLgOTWoUvI4kaUtN"
 DB_NAME="vlim-co-sam-python-boilerplate"
-DATABASE_URI="mongodb+srv://vlim:${DB_PASSWORD}@vlim-sam-python-mongodb.qzg3k.mongodb.net/${DB_NAME}?retryWrites=true&w=majority"
+DATABASE_URI="mongodb+srv://vlim:${DB_PASSWORD}@cluster0.qzg3k.mongodb.net/${DB_NAME}?retryWrites=true&w=majority"
 
