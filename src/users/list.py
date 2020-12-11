@@ -8,7 +8,7 @@ from models.user_model import UserModel
 def user_list(event, context):
     log_event(event)
     # fetch all users from the database
-    User = UserModel(os.environ['DYNAMODB_TABLE'])
+    User = UserModel()
     users = User.list()
 
     # create a response

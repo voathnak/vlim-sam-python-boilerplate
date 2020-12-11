@@ -1,11 +1,13 @@
-from models.Model import CoreModel
+from snail.Model import CoreModel
 
 
 class UserModel(CoreModel):
 
-    _required_fields = ['firstName', 'lastName', 'username', 'password']
+    _required_fields = ['email', 'firstName', 'lastName', 'username', 'password']
+    _unique_key = ['username']
+    _collection_name = "users"
 
-    def __init__(self, table_name):
-        super(UserModel, self).__init__(table_name)
+    def __init__(self):
+        super(UserModel, self).__init__()
 
 

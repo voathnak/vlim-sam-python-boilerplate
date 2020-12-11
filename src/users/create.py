@@ -8,14 +8,14 @@ def lambda_handler(event, context):
     log_event(event)
     values = json.loads(event.get('body'))
 
-    user = UserModel(os.environ['DYNAMODB_TABLE'])
+    user = UserModel()
 
     # write the user to the database
-    user.save(values)
+    user.create(values)
 
     # create a response
     if user:
         return response(201, json.dumps([dict(user)]))
     else:
-        return user.error_response
+        return user._error_response
 

@@ -5,10 +5,10 @@ from snippets import log_event, response
 from models.todo_model import TodoModel
 
 
-def todo_list(event, context):
+def list_todo(event, context):
     log_event(event)
     # fetch all todos from the database
-    Todo = TodoModel(os.environ['DYNAMODB_TABLE'])
+    Todo = TodoModel()
     todos = Todo.list()
 
     # create a response

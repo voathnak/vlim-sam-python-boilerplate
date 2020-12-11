@@ -1,4 +1,4 @@
-rm -rf layer/
+rm -rf layer/core/
 mkdir -p layer/core/python
 cp -r snail layer/core/python
 cp -r models layer/core/python

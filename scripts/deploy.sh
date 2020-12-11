@@ -21,6 +21,7 @@ sam deploy 	--profile "$PROFILE" \
 				StageName="$STAGE_NAME" \
 				DeploymentS3BucketName="$S3_BUCKET" \
 				AppName="$APP_NAME" \
+				DatabaseUri="$DATABASE_URI" \
 			--capabilities CAPABILITY_IAM
 
 # shellcheck disable=SC2155

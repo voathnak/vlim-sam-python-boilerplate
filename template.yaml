@@ -10,6 +10,9 @@ Description: >
 Globals:
   Function:
     Timeout: 60
+    Environment:
+      Variables:
+        DB_NAME: "vlim-co-sam-python-boilerplate"
   Api:
     Cors:
       AllowMethods: "'GET,POST,OPTIONS'"
@@ -20,6 +23,10 @@ Globals:
 
 
 Parameters:
+  DatabaseUri: # Changed this to remove underscore
+    Description: 'Required. MongoDB connection URL'
+    Type: 'String'
+    Default: "mongodb+srv://vlim:bLgOTWoUvI4kaUtN@vlim-sam-python-mongodb.qzg3k.mongodb.net/vlim-co-sam-python-boilerplate?retryWrites=true&w=majority"
   DeploymentS3BucketName:
     Type: String
     Description: The name of the S3 bucket in which the Swagger specification is stored
@@ -31,22 +38,6 @@ Parameters:
     Type: String
     Description: The name of the APP
     Default: vlim-co-sam-python-boilerplate
-  TodoTableName:
-    Type: String
-    Default: 'TodoTable'
-    Description: (Required) The name of the new DynamoDB table you want to create and save to. Minimum 3 characters
-    MinLength: 3
-    MaxLength: 50
-    AllowedPattern: ^[A-Za-z]+$
-    ConstraintDescription: 'Required parameter. Must be characters only. No numbers allowed.'
-  UserTableName:
-    Type: String
-    Default: 'UserTable'
-    Description: (Required) The name of the new DynamoDB table you want to create and save to. Minimum 3 characters
-    MinLength: 3
-    MaxLength: 50
-    AllowedPattern: ^[A-Za-z]+$
-    ConstraintDescription: 'Required parameter. Must be characters only. No numbers allowed.'
 
 
 
@@ -69,9 +60,9 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-HelloWorld
-      CodeUri: hello_world/
+      CodeUri: src/hello_world/
       Handler: app.lambda_handler
-      Runtime: python3.7
+      Runtime: python3.8
       Events:
         HelloWorld:
           Type: Api
@@ -84,20 +75,17 @@ Resources:
         - !Ref PythonLibs
 
 
-  createTodoFunction:
+  todoFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-createTodo
-      CodeUri: todos/
-      Handler: create.lambda_handler
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
+      CodeUri: src/todos/
+      Handler: handler.lambda_handler
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         createTodo:
           Type: Api
@@ -106,26 +94,6 @@ Resources:
               Ref: RestApi
             Path: /todos
             Method: post
-      Layers:
-        - !Ref PythonLibs
-        - !Ref CoreLibs
-
-
-  listTodoFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName:
-        Fn::Sub: ${AppName}-${StageName}-listTodo
-      CodeUri: todos/
-      Handler: list.todo_list
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Events:
         listTodo:
           Type: Api
           Properties:
@@ -133,87 +101,27 @@ Resources:
               Ref: RestApi
             Path: /todos
             Method: get
-      Layers:
-        - !Ref PythonLibs
-        - !Ref CoreLibs
-
-
-  getTodoFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName:
-        Fn::Sub: ${AppName}-${StageName}-getTodo
-      CodeUri: todos/
-      Handler: get.get
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Events:
-        getTodo:
+        getTodoByID:
           Type: Api
           Properties:
             RestApiId:
               Ref: RestApi
-            Path: /todos/{itemId}
+            Path: /todos/{id}
             Method: get
-      Layers:
-        - !Ref PythonLibs
-        - !Ref CoreLibs
-
-
-  updateTodoFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName:
-        Fn::Sub: ${AppName}-${StageName}-updateTodo
-      CodeUri: todos/
-      Handler: update.update
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Events:
-        updateTodo:
-          Type: Api
-          Properties:
-            RestApiId:
-              Ref: RestApi
-            Path: /todos/{itemId}
-            Method: put
-      Layers:
-        - !Ref PythonLibs
-        - !Ref CoreLibs
-
-
-  deleteTodoFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName:
-        Fn::Sub: ${AppName}-${StageName}-deleteTodo
-      CodeUri: todos/
-      Handler: delete.delete
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      Events:
         deleteTodo:
           Type: Api
           Properties:
             RestApiId:
               Ref: RestApi
-            Path: /todos/{itemId}
+            Path: /todos/{id}
             Method: delete
+        updateTodo:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /todos/{id}
+            Method: put
       Layers:
         - !Ref PythonLibs
         - !Ref CoreLibs
@@ -225,15 +133,12 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-createUser
-      CodeUri: users/
+      CodeUri: src/users/
       Handler: create.lambda_handler
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         createUser:
           Type: Api
@@ -259,15 +164,12 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-listUser
-      CodeUri: users/
+      CodeUri: src/users/
       Handler: list.user_list
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         listUser:
           Type: Api
@@ -286,15 +188,12 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-authenticateUser
-      CodeUri: users/
+      CodeUri: src/users/
       Handler: authenticate.authenticate_handler
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         authenticateUser:
           Type: Api
@@ -313,15 +212,12 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-getUser
-      CodeUri: users/
+      CodeUri: src/users/
       Handler: get.get
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         getUser:
           Type: Api
@@ -340,15 +236,12 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-updateUser
-      CodeUri: users/
+      CodeUri: src/users/
       Handler: update.update
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         updateUser:
           Type: Api
@@ -367,15 +260,12 @@ Resources:
     Properties:
       FunctionName:
         Fn::Sub: ${AppName}-${StageName}-deleteUser
-      CodeUri: users/
+      CodeUri: src/users/
       Handler: delete.delete
-      Runtime: python3.7
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
+      Runtime: python3.8
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Sub "${AppName}-${StageName}-${UserTableName}"
+          MONGODB_URI: !Ref DatabaseUri
       Events:
         deleteUser:
           Type: Api
@@ -396,7 +286,7 @@ Resources:
     Properties:
       ContentUri: layer/core
       CompatibleRuntimes: # optional
-        - python3.7
+        - python3.8
 
 
 
@@ -405,39 +295,7 @@ Resources:
     Properties:
       ContentUri: layer/python_libs
       CompatibleRuntimes: # optional
-        - python3.7
-
-
-
-  UsersDynamoDbTable:
-    Type: 'AWS::DynamoDB::Table'
-    Properties:
-      TableName: !Sub "${AppName}-${StageName}-${UserTableName}"
-      AttributeDefinitions:
-        - AttributeName: itemId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: itemId
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-
-
-
-  TodosDynamoDbTable:
-    Type: 'AWS::DynamoDB::Table'
-    Properties:
-      TableName: !Sub "${AppName}-${StageName}-${TodoTableName}"
-      AttributeDefinitions:
-        - AttributeName: itemId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: itemId
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
+        - python3.8
 
 
 
