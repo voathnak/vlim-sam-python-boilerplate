@@ -12,7 +12,7 @@ Globals:
     Timeout: 60
     Environment:
       Variables:
-        DB_NAME: "vlim-co-sam-python-boilerplate"
+        DB_NAME: "vlim-react-sam-python-mongo-boilerplate-dev-mongodb"
   Api:
     Cors:
       AllowMethods: "'GET,POST,OPTIONS'"
@@ -26,7 +26,7 @@ Parameters:
   DatabaseUri: # Changed this to remove underscore
     Description: 'Required. MongoDB connection URL'
     Type: 'String'
-    Default: "mongodb+srv://vlim:bLgOTWoUvI4kaUtN@cluster0.qzg3k.mongodb.net/vlim-co-sam-python-boilerplate?retryWrites=true&w=majority"
+    Default: "mongodb+srv://vlim:bLgOTWoUvI4kaUtN@cluster0.qzg3k.mongodb.net/vlim-react-sam-python-mongo-boilerplate-dev-mongodb?retryWrites=true&w=majority"
   DeploymentS3BucketName:
     Type: String
     Description: The name of the S3 bucket in which the Swagger specification is stored
@@ -37,7 +37,7 @@ Parameters:
   AppName:
     Type: String
     Description: The name of the APP
-    Default: vlim-co-sam-python-boilerplate
+    Default: vlim-react-sam-python-mongo-boilerplate
 
 
 
